@@ -17,7 +17,7 @@ import java.util.List;
 import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 
 public class ConditionalKerberosFactory implements AuthenticatorFactory {
-    public static final String PROVIDER_ID = "conditional-auth-spnego";
+    public static final String PROVIDER_ID = "conditional-kerberos-login";
     static ConditionalKerberos SINGLETON = new ConditionalKerberos();
 
     @Override
@@ -81,13 +81,47 @@ public class ConditionalKerberosFactory implements AuthenticatorFactory {
     }
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
 
+   
     static {
         ProviderConfigProperty property;
         property = new ProviderConfigProperty();
-        property.setName("kerberos.domain");
-        property.setLabel("Kerberos domain");
+        property.setName("kerberos.logout");
+        property.setLabel("Skip kerberos on new login");
+        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        property.setHelpText("When this is set, a cookie is set after a successfull authentication. If the user logs out, the cookie will be checked when logging in to prevent kerberos authentication.");
+        configProperties.add(property);
+    }
+
+
+    static {
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName("cookie.age");
+        property.setLabel("Cookie age");
         property.setType(ProviderConfigProperty.STRING_TYPE);
-        property.setHelpText("The allowed realm for Kerberos authentication.");
+        property.setHelpText("When logging in with Kerberos, a cookie is saved to prevent a new automatic login with Kerberos. This allows for username/password login after logging out/.");
+        configProperties.add(property);
+    }
+
+
+    static {
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName("kerberos.networks");
+        property.setLabel("IP ranges for kerberos login");
+        property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
+        property.setHelpText("Only hosts within these IP ranges (in CIDR format) are allowed to login with Kerberos. If empty, no kerberos login will be allowed.");
+        configProperties.add(property);
+    }
+
+
+    static {
+        ProviderConfigProperty property;
+        property = new ProviderConfigProperty();
+        property.setName("kerberos.excluded_networks");
+        property.setLabel("IP ranges to exclude from Kerberos login");
+        property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
+        property.setHelpText("Exclude these networks from the networks above.");
         configProperties.add(property);
     }
 

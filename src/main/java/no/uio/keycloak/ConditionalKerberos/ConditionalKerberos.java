@@ -48,7 +48,7 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
       AuthenticatorConfigModel config = context.getAuthenticatorConfig();
       String logout = config.getConfig().get("kerberos.logout");
       Boolean allow_logout = true;
-      if ((logout == null) || (logout == "false")){
+      if ((logout == null) || ((logout.equals("false"))){
           allow_logout = false;
       } 
       if (hasCookie(context) && allow_logout ){

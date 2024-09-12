@@ -13,7 +13,7 @@ It uses a cookie to skip another kerberos login, when configured to do that.
 
 ### Installation
 
-Build it with Maven, copy the jar to the `/opt/keycloak/providers/` directory.
+Build it with Maven, copy the jar to the `/opt/keycloak/providers/` directory. We usually build it inside the [Keycloak-quickstarts](https://github.com/keycloak/keycloak-quickstarts) repo, under the `extensions` folder. It is easily adaptable to be built elsewhere.
 
 We can provide the jar as a release if people starts asking for it.
 

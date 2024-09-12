@@ -2,9 +2,9 @@
 
 This Keycloak extension is inspired by the [KeycloakConditionalSpnegoAuthenticator](https://github.com/slominskir/KeycloakConditionalSpnegoAuthenticator).
 
-We has two main functions:
+It has two main functions:
 
-- allowing skipping of Kerberos authentication based on networks or cookies (or both).
+- allowing skipping Kerberos authentication based on networks or cookies (or both).
 - allowing limiting kerberos to IP ranges
 
 This addresses a common compaint about allowing users to logout and log in again with another user account and/or with username/password

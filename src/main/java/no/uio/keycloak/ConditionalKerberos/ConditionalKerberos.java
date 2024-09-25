@@ -19,6 +19,8 @@ import java.net.URI;
 
 import java.time.Instant;
 
+import java.nio.charset.StandardCharsets;
+
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Cookie;
@@ -48,10 +50,11 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
       AuthenticatorConfigModel config = context.getAuthenticatorConfig();
       String logout = config.getConfig().get("kerberos.logout");
       Boolean allow_logout = true;
-      if ((logout == null) || ((logout.equals("false"))){
+      if ((logout == null) || (logout.equals("false"))){
           allow_logout = false;
       } 
       if (hasCookie(context) && allow_logout ){
+        logger.debug("Has cookie and kerberos skipping is allowed. Skipping kerberos."); 
         context.attempted();
         return;
       }
@@ -64,9 +67,14 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
                  context.attempted();
                  return;
                }
-      if ((context.getStatus() == FlowStatus.SUCCESS) && allow_logout)
+      
+      if ((context.getStatus() == FlowStatus.SUCCESS))
       { 
-         setCookieIfSuccessfull(context); 
+         AuthenticationSessionModel authSession = context.getSession().getContext().getAuthenticationSession();
+         authSession.setAuthNote("weblogin-kerberos","true");
+         if (allow_logout){
+           setCookieIfSuccessfull(context); 
+         }
       }
     }
 

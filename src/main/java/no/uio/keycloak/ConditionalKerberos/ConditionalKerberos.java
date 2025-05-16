@@ -50,49 +50,52 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
       AuthenticatorConfigModel config = context.getAuthenticatorConfig();
       String logout = config.getConfig().get("kerberos.logout");
       Boolean allow_logout = true;
+      AuthenticationSessionModel authSession = context.getSession().getContext().getAuthenticationSession();
+
+
       if ((logout == null) || (logout.equals("false"))){
           allow_logout = false;
-      } 
+      }
       if (hasCookie(context) && allow_logout ){
-        logger.debug("Has cookie and kerberos skipping is allowed. Skipping kerberos."); 
+        logger.debug("Has cookie and kerberos skipping is allowed. Skipping kerberos.");
         context.attempted();
         return;
       }
 
-      // Check if Kerberos authentication is allowed 
+      // Check if Kerberos authentication is allowed
       if (withinAllowedNetworks(context) && (( !hasCookie(context) && allow_logout) || (!allow_logout))) {
             super.authenticate(context);
-            setCookieIfSuccessfull(context);
+            //setCookie(context);
         } else {
                  context.attempted();
                  return;
                }
-      
+
       if ((context.getStatus() == FlowStatus.SUCCESS))
-      { 
-         AuthenticationSessionModel authSession = context.getSession().getContext().getAuthenticationSession();
+      {
+         logger.debug("The flow is successful");
          authSession.setAuthNote("weblogin-kerberos","true");
          if (allow_logout){
-           setCookieIfSuccessfull(context); 
+           setCookie(context);
          }
       }
     }
 
     public boolean withinAllowedNetworks(AuthenticationFlowContext context){
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        String networks = config.getConfig().get("kerberos.networks"); 
+        String networks = config.getConfig().get("kerberos.networks");
         String ip_addr = context.getHttpRequest().getHttpHeaders().getRequestHeaders().getFirst("X-Forwarded-For");
         boolean kerberos = false;
         // check if user is allowed to use kerberos
         if (networks != null){
-          String[] networks_list = networks.split("##"); 
+          String[] networks_list = networks.split("##");
           for (String net : networks_list){
-            try 
+            try
             {
               SubnetInfo subnet = (new SubnetUtils(net)).getInfo();
               if (subnet.isInRange(ip_addr)){
                 kerberos = true;
-                logger.debug("IP address within allowed ranges for Kerberos authentication: "+ip_addr); 
+                logger.debug("IP address within allowed ranges for Kerberos authentication: "+ip_addr);
                 break;
               }
             }catch (Exception e){ logger.warn("Can't parse IP range kerberos allowed in configuration.");}
@@ -103,12 +106,12 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
         if (exclude_networks != null){
           String[] exclude_list = exclude_networks.split("##");
           for (String net : exclude_list){
-            try 
+            try
             {
               SubnetInfo subnet = (new SubnetUtils(net)).getInfo();
               if (subnet.isInRange(ip_addr)){
                 kerberos = false;
-                logger.debug("IP address within networks excluded for kerberos authentication: "+ip_addr); 
+                logger.debug("IP address within networks excluded for kerberos authentication: "+ip_addr);
                 break;
               }
             }catch (Exception e){ logger.warn("Can't parse IP range in exclude list configuration."); continue;  }
@@ -122,11 +125,11 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
         return  cookie != null;
     }
 
-    private void setCookieIfSuccessfull(AuthenticationFlowContext context){
-    
+    private void setCookie(AuthenticationFlowContext context){
+
      AuthenticatorConfigModel config = context.getAuthenticatorConfig();
      int maxCookieAge = 60 * 60 * 24 ; // 1 day
-     if (config != null && config.getConfig().get("cookie.age") != null) 
+     if (config != null && config.getConfig().get("cookie.age") != null)
         {
           maxCookieAge = Integer.valueOf(config.getConfig().get("cookie.age"));
         }
@@ -140,7 +143,7 @@ public class ConditionalKerberos extends SpnegoAuthenticator {
                                 .maxAge(maxCookieAge)
                                 .secure(true)
                                 .build();
-      response.setCookieIfAbsent(newCookie); 
+      response.setCookieIfAbsent(newCookie);
     }
 
 
